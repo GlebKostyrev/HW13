@@ -12,7 +12,7 @@ def _load_posts_from_json():
 def get_posts_by_tag(tag_name):
 
     posts = _load_posts_from_json()
-    posts_matching =[]
+    posts_matching = []
     search_for = f"#{tag_name}"
 
     for post in posts:
@@ -41,4 +41,13 @@ def get_all_tags_from_posts():
         tags = tags.union(tags_in_posts)
 
     return list(tags)
+
+
+def dumps_post(new_data):
+
+    with open("posts.json", encoding="utf-8") as f:
+        new_post = json.load(f)
+        new_post.append(new_data)
+    with open("posts.json", 'w', encoding="utf-8") as outfile:
+        json.dump(new_post, outfile, ensure_ascii=False, indent=2)
 

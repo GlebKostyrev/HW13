@@ -1,5 +1,6 @@
 from flask import Flask, request, render_template, redirect, send_from_directory
-from functions import get_posts_by_tag, get_all_tags_from_posts
+from functions import get_posts_by_tag, get_all_tags_from_posts, dumps_post
+import imghdr
 
 POST_PATH = "posts.json"
 UPLOAD_FOLDER = "uploads/images"
@@ -18,7 +19,7 @@ def page_index():
 def page_tag():
     tag_name = request.args.get('tag')
     posts = get_posts_by_tag(tag_name)
-    return render_template("post_by_tag.html", tag=tag_name, posts = posts)
+    return render_template("post_by_tag.html", tag=tag_name, posts=posts)
 
 
 @app.route("/post", methods=["GET"])
@@ -30,10 +31,14 @@ def page_post_form():
 @app.route("/post", methods=["POST"])
 def page_post_create():
 
-    picture = request.files.get("picture", None)
+    picture = request.files.get("picture")
     content = request.values.get("content")
 
-    if not picture:
+    if not picture or not content:
+        return redirect("/post")
+
+    image_type = imghdr.what(picture)
+    if not image_type:
         return redirect("/post")
 
     filename = picture.filename
@@ -41,6 +46,9 @@ def page_post_create():
     picture.save(path)
 
     picture_new_url = "/"+UPLOAD_FOLDER+"/"+filename
+
+    new_posts = {"pic": path, "content": content}
+    dumps_post(new_posts)
 
     return render_template("post_uploaded.html", picture=picture_new_url, content=content)
 
